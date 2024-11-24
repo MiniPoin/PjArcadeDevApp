@@ -1,37 +1,87 @@
-
+import pygame
 import random
+import sys
 
-def afficher_grille(grille):
-    for ligne in grille:
-        print(' '.join(str(cell) if cell >= 0 else '-' for cell in ligne))
+class Demineur:
+    def __init__(self,taille_ecran,num_mines):
+        self.taille_ecran = taille_ecran
+        self.num_mines = num_mines
+        self.grille = [[0 for _ in range(taille_ecran)] for _ in range(taille_ecran)]
+        self.decouvert = [[False for _ in range(taille_ecran)] for _ in range(taille_ecran)]
+        self.flag = [[False for _ in range(taille_ecran)] for _ in range(taille_ecran)]
+        self.game_over = False
+        self.place_mines()
+        self.calcul_case()
 
-def placer_mines(taille, nb_mines):
-    grille = [[0 for _ in range(taille)] for _ in range(taille)]
-    mines = 0
-    while mines < nb_mines:
-        x, y = random.randint(0, taille - 1), random.randint(0, taille - 1)
-        if grille[x][y] != -1:
-            grille[x][y] = -1
-            mines += 1
-    return grille
+    def place_mines(self):
+        ajout_mines = self.num_mines
+        while ajout_mines > 0:
+            x = random.randint(0, self.taille_ecran - 1)
+            y = random.randint(0, self.taille_ecran - 1)
+            if self.grille[x][y] != 9:
+                self.grille[x][y] = 9
+                ajout_mines -= 1
 
+    def calcul_case(self):
+        for x in range(self.taille_ecran):
+            for y in range(self.taille_ecran):
+                if self.grille[x][y] != 9:
+                    self.grille[x][y] = self.compte_mines_proches(x, y)
 
-def calculer_chiffres(grille):
-    taille = len(grille)
-    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-    for x in range(taille):
-        for y in range(taille):
-            if grille[x][y] == -1:
-                continue
-            compteur = sum(1 for dx, dy in directions if 0 <= x + dx < taille and 0 <= y + dy < taille and grille[x+dx][y+dy] == -1)
-            grille[x][y] = compteur
+    def compte_mines_proches(self, x, y):
+        prochaines_case = [
+            (x-1, y-1), (x-1, y), (x-1, y+1),
+            (x, y-1),           (x, y+1),
+            (x+1, y-1), (x+1, y), (x+1, y+1)
+        ]
+        return sum(1 for i, j in prochaines_case if 0 <= i < self.taille_ecran and 0 <= j < self.taille_ecran and self.grille[i][j] == 9)
 
+    def decouvre_case(self, x, y):
+        if self.decouvert[x][y] or self.flag[x][y]:
+            return
+        self.decouvert[x][y] = True
+        if self.grille[x][y] == 9:
+            self.game_over = True
+        elif self.grille[x][y] == 0:
+            self.decouvre_cases_proche(x, y)
+    
+    def coordonee(self, x, y,est_fini, niv, CELL_SIZE, taille_ecran):
+        if taille_ecran + 1 >= y >= taille_ecran and x < taille_ecran :
+            return 1
+        elif x >= taille_ecran or y > taille_ecran + 1 or x < 0 or y < 0:
+            return     
+        elif est_fini :
+            return
+        else :
+            self.decouvre_case(x,y)
+            return 2
 
-def jouer():
-    taille = 5
-    nb_mines = 5
-    grille = placer_mines(taille, nb_mines)
-    calculer_chiffres(grille)
-    afficher_grille(grille)
+    def decouvre_cases_proche(self, x, y):
+        prochaines_case = [
+            (x-1, y-1), (x-1, y), (x-1, y+1),
+            (x, y-1),           (x, y+1),
+            (x+1, y-1), (x+1, y), (x+1, y+1)
+        ]
+        for i, j in prochaines_case:
+            if 0 <= i < self.taille_ecran and 0 <= j < self.taille_ecran:
+                self.decouvre_case(i, j)
 
-jouer()
+    def est_une_mine(self, x, y, nb_mine_devine, est_fini, NUM_MINES, taille_ecran):
+        if taille_ecran + 1 >= y >= taille_ecran and x < taille_ecran :
+            return 1
+        elif x >= taille_ecran or y > taille_ecran + 1 or x < 0 or y < 0 or est_fini :
+            return     
+        elif not self.decouvert[x][y]:
+            if not self.flag[x][y] and nb_mine_devine == NUM_MINES :
+                return
+            self.flag[x][y] = not self.flag[x][y]
+            if self.flag[x][y] == True :
+                return 2
+            return 3
+
+    def verif_gagner(self):
+        for x in range(self.taille_ecran):
+            for y in range(self.taille_ecran):
+                if self.grille[x][y] != 9 and not self.decouvert[x][y]:
+                    return False
+        return True
