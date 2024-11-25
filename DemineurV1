@@ -85,3 +85,138 @@ class Demineur:
                 if self.grille[x][y] != 9 and not self.decouvert[x][y]:
                     return False
         return True
+
+
+def dessin_grille(game,part_gagner,nb_mine_devine,secondes,niv, ECART_X, ECART_Y, RESTART_X, RESTART_Y, CELL_SIZE, screen, font, font2, font3, font4, GRIS_FONCEE, NOIR, GRIS, ROUGE, BLANC):
+    rect1 = pygame.Rect(ECART_X - 5, ECART_Y - 5, RESTART_X - ECART_X + 10, RESTART_Y - ECART_Y + CELL_SIZE * 2 + 5)
+    pygame.draw.rect(screen,NOIR,rect1)
+    for x in range(game.taille_ecran):
+        for y in range(game.taille_ecran):
+            rect = pygame.Rect(x*CELL_SIZE+ ECART_X, y*CELL_SIZE + ECART_Y , CELL_SIZE, CELL_SIZE)            
+            if game.decouvert[x][y]:
+                pygame.draw.rect(screen, GRIS if game.grille[x][y] == 0 else GRIS_FONCEE, rect)
+                if game.grille[x][y] > 0:
+                    fond = font4.render(str(game.grille[x][y]), True, NOIR)
+                    screen.blit(fond, (x*CELL_SIZE + ECART_X + 5, y*CELL_SIZE + ECART_Y + 5))
+            elif game.flag[x][y]:
+                pygame.draw.rect(screen, ROUGE, rect)
+            else:
+                pygame.draw.rect(screen, BLANC, rect)
+                
+            pygame.draw.rect(screen,NOIR, rect, 1)
+    restart(game,niv, ECART_X, ECART_Y, RESTART_Y, RESTART_X, CELL_SIZE, screen, font2, font3, GRIS, NOIR, GRIS_FONCEE)
+    compteur(game,part_gagner,nb_mine_devine,secondes, ECART_X, ECART_Y, CELL_SIZE, RESTART_X, font, screen, BLANC)
+
+def main(part_gagner = 0,niv = 1):
+    
+    # Couleurs
+    BLANC = (255, 255, 255)
+    NOIR = (0, 0, 0)
+    GRIS = (192, 192, 192)
+    GRIS_FONCEE = (128, 128, 128)
+    ROUGE = (255, 0, 0)
+    VERT = (0, 255, 0)
+    ORANGE = (200,200,50)
+
+    # Initialisation Pygame
+    pygame.init()
+
+    # Dimensions
+    CELL_SIZE = 25
+    taille_ecran = 25  # 25x25 grille
+    screen_info = pygame.display.Info()
+    LONGUEUR_ECRAN = screen_info.current_h
+    LARGEUR_ECRAN = screen_info.current_w
+    ECART_X = (LARGEUR_ECRAN - taille_ecran*CELL_SIZE)//2 - 50
+    ECART_Y = (LONGUEUR_ECRAN - taille_ecran*CELL_SIZE)//2 
+    RESTART_X = taille_ecran * CELL_SIZE + ECART_X #630
+    RESTART_Y = taille_ecran * CELL_SIZE + ECART_Y
+
+    screen = pygame.display.set_mode((LARGEUR_ECRAN , LONGUEUR_ECRAN + ECART_Y), pygame.FULLSCREEN)
+    pygame.display.set_caption("Démineur")
+    font = pygame.font.SysFont("Monospace",24,True)
+    font2 = pygame.font.SysFont("Monospace",20,True)
+    font3 = pygame.font.SysFont("Monospace",26,True)
+    font4 = pygame.font.SysFont("Monospace",20,True)
+    large_font = pygame.font.SysFont(None, 123)
+    large_font2 = pygame.font.SysFont(None, 120)
+    
+    NUM_MINES = niv * 30
+    game = Demineur(taille_ecran,NUM_MINES)
+    clock = pygame.time.Clock()
+    print(LARGEUR_ECRAN ,LONGUEUR_ECRAN, game.taille_ecran)
+    temps = False
+    temps2 = True
+    est_fini = False
+    nb_mine_devine = 0
+    secondes = 0
+    running = True
+    while running:
+        if temps2 and temps:
+            depart = pygame.time.get_ticks()
+            temps2 = False
+            
+        if temps and not temps2:
+            secondes = (pygame.time.get_ticks() - depart) // 1000
+            
+        if game.game_over:
+            ecran_perdu(game,niv, CELL_SIZE, ECART_X, ECART_Y, RESTART_X, RESTART_Y, taille_ecran, screen, font2, font3, large_font, large_font2, GRIS, VERT, ROUGE, ORANGE, NOIR, GRIS_FONCEE)
+            temps = False
+            est_fini = True
+            
+        elif game.verif_gagner() and not est_fini:
+            ecran_gagner(game,niv, CELL_SIZE, ECART_X, ECART_Y, RESTART_X, RESTART_Y, screen, font2, font3, large_font, large_font2, GRIS, NOIR, GRIS_FONCEE, VERT)
+            print("Bravo c'est gagner!")
+            part_gagner += 1
+            temps = False
+        
+        else:
+            image = pygame.image.load('fontpyg.jpg')
+            image = pygame.transform.scale(image, (LARGEUR_ECRAN + ECART_X, LONGUEUR_ECRAN + ECART_Y))
+            screen.blit(image, (0, 0))
+            dessin_grille(game,part_gagner,nb_mine_devine,secondes,niv, ECART_X, ECART_Y, RESTART_X, RESTART_Y, CELL_SIZE, screen, font, font2, font3, font4, GRIS_FONCEE, NOIR, GRIS, ROUGE, BLANC)
+            
+        if game.verif_gagner():
+            ecran_gagner(game,niv, CELL_SIZE, ECART_X, ECART_Y, RESTART_X, RESTART_Y, screen, font2, font3, large_font, large_font2, GRIS, NOIR, GRIS_FONCEE, VERT)
+    
+        est_fini = game.verif_gagner()
+               
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                print(mouse_x,mouse_y)
+                grille_x = (mouse_x - ECART_X) // CELL_SIZE
+                grille_y = (mouse_y - ECART_Y) // CELL_SIZE
+                niv = game.niveau(mouse_x,mouse_y,niv, RESTART_X, ECART_X, RESTART_Y, ECART_Y, CELL_SIZE)
+                if niv == 0 :
+                    #retour menu
+                    running = False
+                    
+                if event.button == 1:  #clic gauche
+                    a = game.coordonee(grille_x, grille_y, est_fini,niv, CELL_SIZE, taille_ecran)
+                    if a == 1:
+                        main(part_gagner,niv)
+                    elif a == 2 and not temps:
+                        temps = True 
+                elif event.button == 3:  #clic droit
+                    a = game.est_une_mine(grille_x, grille_y, nb_mine_devine, est_fini,NUM_MINES, taille_ecran)
+                    if a == 1:
+                        main(part_gagner,niv)
+                    elif a == 2 :
+                        nb_mine_devine += 1
+                        temps = True 
+                    elif a == 3 :
+                        nb_mine_devine -= 1
+                        temps = True 
+        pygame.display.flip()
+        clock.tick(100)
+        
+        if not running :
+            pygame.quit()
+            sys.exit()
+            
+        
+main()
