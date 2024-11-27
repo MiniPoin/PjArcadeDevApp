@@ -86,6 +86,62 @@ class Demineur:
                     return False
         return True
 
+def compteur(game,part_gagner,nb_mine_devine,secondes, ECART_X, ECART_Y, CELL_SIZE, RESTART_X, font, screen, BLANC):
+    mine = "mine :  " + str(nb_mine_devine)
+    mine = font.render(mine, True, BLANC)
+    screen.blit(mine, (ECART_X , ECART_Y - CELL_SIZE-10))
+    part_str = "gagner :  " + str(part_gagner)
+    part = font.render(part_str, True, BLANC)
+    screen.blit(part,(RESTART_X - part.get_width(), ECART_Y - CELL_SIZE-10))
+    temps_min = secondes // 60
+    temps_sec = secondes % 60
+    temps_str = str(temps_min) + " : " + str(temps_sec)
+    temps = font.render(temps_str, True, BLANC)
+    screen.blit(temps,(((RESTART_X - ECART_X)//2 + ECART_X - temps.get_width()), ECART_Y - CELL_SIZE-10))
+    
+
+def restart(game,niv, ECART_X, ECART_Y, RESTART_Y, RESTART_X, CELL_SIZE, screen, font2, font3, GRIS, NOIR, GRIS_FONCEE):
+    fond2 = pygame.Rect(ECART_X , RESTART_Y + 5 , RESTART_X - ECART_X , CELL_SIZE * 2 - 10)
+    pygame.draw.rect(screen,GRIS,fond2)
+    restart = font3.render("RESTART", True, NOIR)
+    screen.blit(restart, ((RESTART_X - ECART_X)//2 + ECART_X - restart.get_width()//2, RESTART_Y + 12))
+    
+    fond1 = pygame.Rect(ECART_X//4 - 5, RESTART_Y//2 - ECART_Y - 5, 0.5*ECART_X + 10, CELL_SIZE * 2 )
+    pygame.draw.rect(screen,GRIS_FONCEE,fond1)
+    fond2 = pygame.Rect(ECART_X//4, RESTART_Y//2 - ECART_Y , 0.5*ECART_X , CELL_SIZE * 2 - 10)
+    pygame.draw.rect(screen,GRIS,fond2)
+    menu = font2.render("MENU", True, NOIR)
+    screen.blit(menu, (ECART_X//2 - menu.get_width()//2, RESTART_Y//2 - ECART_Y + 10))
+    
+    n1 = n2 = n3 = NOIR
+    if niv == 1:
+        n1 = GRIS_FONCEE
+    elif niv == 2:
+        n2 = GRIS_FONCEE
+    else :
+        n3 = GRIS_FONCEE
+        
+    fond1 = pygame.Rect(RESTART_X + ECART_X//4 - 5, RESTART_Y//2 - ECART_Y - 5, 0.5*ECART_X + 10, CELL_SIZE * 2 )
+    pygame.draw.rect(screen,n1,fond1)
+    fond2 = pygame.Rect(RESTART_X + ECART_X//4, RESTART_Y//2 - ECART_Y , 0.5*ECART_X , CELL_SIZE * 2 - 10)
+    pygame.draw.rect(screen,GRIS,fond2)
+    restart2 = font2.render("NIVEAU 1", True, NOIR)
+    screen.blit(restart2, (RESTART_X + ECART_X//2 - restart2.get_width()//2, RESTART_Y//2 - ECART_Y + 10))
+    
+    fond1 = pygame.Rect(RESTART_X + ECART_X//4 - 5, RESTART_Y//2 - 5, 0.5*ECART_X + 10, CELL_SIZE * 2 )
+    pygame.draw.rect(screen,n2,fond1)
+    fond2 = pygame.Rect(RESTART_X + ECART_X//4, RESTART_Y//2 , 0.5*ECART_X , CELL_SIZE * 2 - 10)
+    pygame.draw.rect(screen,GRIS,fond2)
+    restart3 = font2.render("NIVEAU 2", True, NOIR)
+    screen.blit(restart3, (RESTART_X + ECART_X//2 - restart3.get_width()//2, RESTART_Y//2 + 10))
+    
+    fond1 = pygame.Rect(RESTART_X + ECART_X//4 - 5, RESTART_Y//2 + ECART_Y - 5, 0.5*ECART_X + 10, CELL_SIZE * 2 )
+    pygame.draw.rect(screen,n3,fond1)
+    fond2 = pygame.Rect(RESTART_X + ECART_X//4, RESTART_Y//2 + ECART_Y , 0.5*ECART_X , CELL_SIZE * 2 - 10)
+    pygame.draw.rect(screen,GRIS,fond2)
+    restart4 = font2.render("NIVEAU 3", True, NOIR)
+    screen.blit(restart4, (RESTART_X + ECART_X//2 - restart4.get_width()//2, RESTART_Y//2 + ECART_Y + 10))
+
 
 def dessin_grille(game,part_gagner,nb_mine_devine,secondes,niv, ECART_X, ECART_Y, RESTART_X, RESTART_Y, CELL_SIZE, screen, font, font2, font3, font4, GRIS_FONCEE, NOIR, GRIS, ROUGE, BLANC):
     rect1 = pygame.Rect(ECART_X - 5, ECART_Y - 5, RESTART_X - ECART_X + 10, RESTART_Y - ECART_Y + CELL_SIZE * 2 + 5)
@@ -106,6 +162,10 @@ def dessin_grille(game,part_gagner,nb_mine_devine,secondes,niv, ECART_X, ECART_Y
             pygame.draw.rect(screen,NOIR, rect, 1)
     restart(game,niv, ECART_X, ECART_Y, RESTART_Y, RESTART_X, CELL_SIZE, screen, font2, font3, GRIS, NOIR, GRIS_FONCEE)
     compteur(game,part_gagner,nb_mine_devine,secondes, ECART_X, ECART_Y, CELL_SIZE, RESTART_X, font, screen, BLANC)
+
+
+
+
 
 def main(part_gagner = 0,niv = 1):
     
