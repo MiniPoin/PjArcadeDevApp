@@ -14,12 +14,15 @@ def dessin(x,y,ECART_X,ECART_Y,RESTART_X,RESTART_Y,ORANGE,NOIR,BLEU,font4,font5,
     text = large_font.render("CRÉDITS", True, ORANGE)
     screen.blit(text, ((RESTART_X - ECART_X)//2 + ECART_X - text.get_width()//2, ECART_Y//2 +70))
     
-    fond1 = pygame.Rect(245 , 295 , 210 , 60)
+    rect1 = pygame.Rect(ECART_X - 5, RESTART_Y - 50, RESTART_X - ECART_X + 10,50)
+    pygame.draw.rect(screen,BLEU,rect1)
+    
+    fond1 = pygame.Rect(ECART_X//4 - 5, ECART_Y*2 - 5,(ECART_X//2) +10,60)
     pygame.draw.rect(screen,GRIS_FONCEE,fond1)
-    fond2 = pygame.Rect(250, 300,200,50)
+    fond2 = pygame.Rect(ECART_X//4, ECART_Y*2,ECART_X//2,50)
     pygame.draw.rect(screen,GRIS,fond2)
     menu = font4.render("MENU", True, NOIR)
-    screen.blit(menu, (350 - menu.get_width()//2, 300 + 10))
+    screen.blit(menu, (ECART_X//2 - menu.get_width()//2, ECART_Y*2+ 10))
 
 
 def credit(x,y,ECART_Y,RESTART_Y,ORANGE,font4,font5,screen):
@@ -32,7 +35,7 @@ def credit(x,y,ECART_Y,RESTART_Y,ORANGE,font4,font5,screen):
         ("MENU OPTION", "ISMAEL BERGHIOUA"),
         ("ADAPTATION DES FICHIERS", "KIERANE BOUTTEMANT"),
         ("PROF DE L'ANNEE","R.TOMCZACK")
-        ]
+    ]
     
     for titre, auteur in credits:
         titre_text = font5.render(titre, True, ORANGE)
@@ -40,12 +43,12 @@ def credit(x,y,ECART_Y,RESTART_Y,ORANGE,font4,font5,screen):
 
         # Afficher le titre si dans les limites
         if ECART_Y - 50 <= y <= RESTART_Y -50:
-            screen.blit(titre_text, (x-titre_text.get_width()//2, y))
+            screen.blit(titre_text, (x - titre_text.get_width()//2, y))
         y += titre_text.get_height() + 10  # Espacement après le titre
 
         # Afficher l'auteur si dans les limites
         if ECART_Y - 50 <= y <= RESTART_Y - 50 :
-            screen.blit(auteur_text, (x-auteur_text.get_width()//2, y))
+            screen.blit(auteur_text, (x - auteur_text.get_width()//2 , y))
         y += auteur_text.get_height() + 30  # Espacement après l'auteur
 
     
@@ -54,6 +57,7 @@ def main():
     pygame.init()
     
     # Couleurs
+    BLANC = (255, 255, 255)
     NOIR = (0, 0, 0)
     ORANGE = (200,200,50)
     BLEU = (0, 0, 25)
@@ -79,23 +83,27 @@ def main():
     image = pygame.transform.scale(image, (LARGEUR_ECRAN + ECART_X, LONGUEUR_ECRAN + ECART_Y))
     screen.blit(image, (0, 0))
     run = True
-    x =  RESTART_X//2 + ECART_X//2
+    x =  RESTART_X//2 + (RESTART_X - ECART_X)//2
     y = RESTART_Y + 25
+    
+    x_quit = ECART_X//4 - 5 
+    y_quit = ECART_Y*2- 5 
     while run :
         y = y - 1
-        if(y <= -ECART_Y *3 ):
+        if(y <= -ECART_Y *3):
             y = RESTART_Y + 25
         screen.blit(image, (0, 0))
         dessin(x,y,ECART_X,ECART_Y,RESTART_X,RESTART_Y,ORANGE,NOIR,BLEU,font4,font5,screen)
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN :
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                if 250 <= mouse_x <= 450 and 300 <= mouse_y <= 350 :
-                    run = False
+                if x_quit <= mouse_x <= x_quit + (ECART_X//2) +10 and y_quit <= mouse_y <= y_quit + 60 :
+                    return True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return True
         pygame.display.flip()
         clock.tick(100)
-        #run = False
-
-    
+    return False
 main()
 pygame.quit()
